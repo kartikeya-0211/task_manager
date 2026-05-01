@@ -1,0 +1,32 @@
+2026-05-01 13:09:36,835 - WARNING - User 4 tried to modify locked field 'title' on task 1
+2026-05-01 13:09:50,701 - WARNING - User 4 tried to edit unassigned task 2
+2026-05-01 13:09:52,689 - WARNING - User 4 tried to edit unassigned task 2
+2026-05-01 13:09:54,100 - WARNING - User 4 tried to edit unassigned task 2
+2026-05-01 13:10:05,826 - WARNING - User 4 tried to edit unassigned task 2
+2026-05-01 13:10:06,237 - WARNING - User 4 tried to edit unassigned task 2
+2026-05-01 13:10:06,453 - WARNING - User 4 tried to edit unassigned task 2
+2026-05-01 13:10:12,435 - WARNING - User 4 tried to edit unassigned task 2
+2026-05-01 13:10:21,307 - WARNING - User 4 tried to modify locked field 'title' on task 1
+2026-05-01 13:10:24,389 - WARNING - User 4 tried to modify locked field 'title' on task 1
+2026-05-01 13:10:26,605 - WARNING - User 4 tried to modify locked field 'title' on task 1
+2026-05-01 13:10:31,812 - WARNING - User 4 tried to modify locked field 'title' on task 1
+2026-05-01 13:10:32,361 - WARNING - User 4 tried to modify locked field 'title' on task 1
+2026-05-01 13:10:32,547 - WARNING - User 4 tried to modify locked field 'title' on task 1
+2026-05-01 13:10:32,708 - WARNING - User 4 tried to modify locked field 'title' on task 1
+2026-05-01 13:10:32,925 - WARNING - User 4 tried to modify locked field 'title' on task 1
+2026-05-01 13:10:33,161 - WARNING - User 4 tried to modify locked field 'title' on task 1
+2026-05-01 13:10:33,370 - WARNING - User 4 tried to modify locked field 'title' on task 1
+2026-05-01 13:11:12,323 - INFO - Login attempt for email: kartikeyabhardwaj0211@gmail.com
+2026-05-01 13:11:12,323 - INFO - Found user in DB.
+2026-05-01 13:11:25,742 - INFO - Login attempt for email: ABCD@GMAIL.COM
+2026-05-01 13:11:25,742 - INFO - Found user in DB.
+2026-05-01 13:11:31,132 - WARNING - User 3 tried to modify locked field 'title' on task 2
+2026-05-01 13:18:10,395 - INFO - Login attempt for email: ABCD@GMAIL.COM
+2026-05-01 13:18:10,395 - INFO - Found user in DB.
+2026-05-01 13:18:18,437 - INFO - User 3 updated status of task 2 to done
+2026-05-01 13:19:45,388 - INFO - Login attempt for email: you@example.com
+2026-05-01 13:19:45,388 - INFO - Found user in DB.
+2026-05-01 13:19:52,216 - INFO - User 4 updated status of task 1 to done
+2026-05-01 13:19:56,327 - INFO - User 4 updated status of task 1 to todo
+2026-05-01 13:20:09,112 - INFO - Login attempt for email: kartikeyabhardwaj0211@gmail.com
+2026-05-01 13:20:09,112 - INFO - Found user in DB.

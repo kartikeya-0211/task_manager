@@ -1,0 +1,18 @@
+# Virtual Environment
+venv/
+env/
+
+# Local Database
+*.db
+*.sqlite
+*.sqlite3
+taskflow.db
+
+# Python Cache (Pylance/VSCode)
+__pycache__/
+*.py[cod]
+*$py.class
+.vscode/
+
+# Environment Variables
+.env

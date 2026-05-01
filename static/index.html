@@ -124,8 +124,6 @@
       <label>Name</label><input id="s-name" placeholder="John Doe">
       <label>Email</label><input id="s-email" type="email" placeholder="you@example.com">
       <label>Password</label><input id="s-pass" type="password" placeholder="••••••••">
-      <label>Role</label>
-      <select id="s-role"><option value="member">Member</option><option value="admin">Admin</option></select>
       <button class="btn btn-primary btn-full" onclick="doSignup()">Create Account</button>
     </div>
   </div>
@@ -140,6 +138,7 @@
         <div class="nav-item active" id="nav-dash" onclick="go('dashboard')">📊 Dashboard</div>
         <div class="nav-item" id="nav-proj" onclick="go('projects')">📁 Projects</div>
         <div class="nav-item" id="nav-mine" onclick="go('mytasks')">✅ My Tasks</div>
+        <div class="nav-item" id="nav-users" onclick="go('users')" style="display:none">👥 Users</div>
       </div>
       <div class="user-bar">
         <div class="user-name" id="u-name">—</div>
@@ -198,6 +197,15 @@
       <div class="page" id="page-mytasks">
         <div class="page-header"><div class="page-title">My Tasks</div></div>
         <div id="my-task-list"></div>
+      </div>
+
+      <!-- USERS (Admin only) -->
+      <div class="page" id="page-users">
+        <div class="page-header"><div class="page-title">User Management</div></div>
+        <div class="card">
+          <div style="font-size:13px;color:#888;margin-bottom:16px">As admin, you can promote members to admin or demote admins to members.</div>
+          <div id="users-list"></div>
+        </div>
       </div>
 
     </div>
@@ -275,6 +283,7 @@ async function initApp() {
     document.getElementById('u-name').textContent = me.name;
     document.getElementById('u-role').textContent = me.role;
     if (me.role !== 'admin') document.getElementById('btn-new-proj').style.display = 'none';
+    if (me.role === 'admin') document.getElementById('nav-users').style.display = '';
     allUsers = await req('GET', '/api/users');
     go('dashboard');
   } catch { logout(); }
@@ -296,7 +305,7 @@ async function doLogin() {
 
 async function doSignup() {
   try {
-    const r = await req('POST', '/api/signup', { name: v('s-name'), email: v('s-email'), password: v('s-pass'), role: v('s-role') }, false);
+    const r = await req('POST', '/api/signup', { name: v('s-name'), email: v('s-email'), password: v('s-pass') }, false);
     token = r.token; localStorage.setItem('token', token); me = r; initApp();
   } catch(e) { showErr(e.message); }
 }
@@ -308,11 +317,38 @@ function go(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
-  const nav = document.getElementById('nav-' + (page === 'dashboard' ? 'dash' : page === 'projects' ? 'proj' : 'mine'));
+  const nav = document.getElementById('nav-' + (page === 'dashboard' ? 'dash' : page === 'projects' ? 'proj' : page === 'mytasks' ? 'mine' : 'users'));
   if (nav) nav.classList.add('active');
   if (page === 'dashboard') loadDash();
   if (page === 'projects') loadProjects();
   if (page === 'mytasks') loadMyTasks();
+  if (page === 'users') loadUsers();
+}
+
+// ── USERS (Admin) ─────────────────────────
+async function loadUsers() {
+  const users = await req('GET', '/api/users');
+  document.getElementById('users-list').innerHTML = users.map(u => `
+    <div class="member-row">
+      <div>
+        <div style="font-size:13px;font-weight:500">${u.name}</div>
+        <div style="font-size:12px;color:#888">${u.email}</div>
+        <span class="role-badge">${u.role}</span>
+      </div>
+      ${u.id !== me.id ? `
+        <button class="btn btn-sm ${u.role === 'member' ? 'btn-primary' : 'btn-ghost'}"
+          onclick="changeRole(${u.id}, '${u.role === 'member' ? 'admin' : 'member'}')">
+          ${u.role === 'member' ? '⬆ Make Admin' : '⬇ Make Member'}
+        </button>` : '<span style="font-size:12px;color:#aaa">You</span>'}
+    </div>`).join('');
+}
+
+async function changeRole(userId, newRole) {
+  if (!confirm(`Change this user to ${newRole}?`)) return;
+  try {
+    const r = await req('PATCH', `/api/users/${userId}/role`, { role: newRole });
+    toast(r.message); loadUsers();
+  } catch(e) { toast(e.message); }
 }
 
 // ── DASHBOARD ─────────────────────────────

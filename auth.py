@@ -1,4 +1,4 @@
-from passlib.context import CryptContext
+import bcrypt
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 from fastapi import Depends, HTTPException
@@ -8,11 +8,14 @@ from database import get_db
 import models, os
 
 SECRET = os.environ.get("SECRET_KEY", "changeme123")
-pwd = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 bearer = HTTPBearer()
 
-def hash_password(p): return pwd.hash(p)
-def verify_password(p, h): return pwd.verify(p, h)
+def hash_password(p: str) -> str:
+    return bcrypt.hashpw(p.encode(), bcrypt.gensalt()).decode()
+
+def verify_password(p: str, h: str) -> bool:
+    return bcrypt.checkpw(p.encode(), h.encode())
 
 def create_token(data: dict):
     data["exp"] = datetime.utcnow() + timedelta(hours=72)

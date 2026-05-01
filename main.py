@@ -32,7 +32,12 @@ def root(): return FileResponse("static/index.html")
 def signup(data: schemas.UserCreate, db: Session = Depends(get_db)):
     if db.query(models.User).filter_by(email=data.email).first():
         raise HTTPException(400, "Email already exists")
-    user = models.User(name=data.name, email=data.email, role=data.role,
+    
+    # First user ever becomes admin, everyone else is member
+    user_count = db.query(models.User).count()
+    role = "admin" if user_count == 0 else "member"
+
+    user = models.User(name=data.name, email=data.email, role=role,
                        password_hash=auth.hash_password(data.password))
     db.add(user); db.commit(); db.refresh(user)
     return schemas.UserOut(id=user.id, name=user.name, email=user.email,
@@ -64,6 +69,25 @@ def me(u=Depends(auth.get_current_user)):
 def users(db: Session = Depends(get_db), u=Depends(auth.get_current_user)):
     return [{"id": x.id, "name": x.name, "email": x.email, "role": x.role}
             for x in db.query(models.User).all()]
+
+@app.patch("/api/users/{user_id}/role")
+def update_user_role(user_id: int, data: dict, db: Session = Depends(get_db), u=Depends(auth.get_current_user)):
+    # Only admins can promote/demote users
+    if u.role != "admin":
+        raise HTTPException(403, "Only admins can change user roles")
+    
+    new_role = data.get("role")
+    if new_role not in ["admin", "member"]:
+        raise HTTPException(400, "Role must be 'admin' or 'member'")
+    
+    user = db.query(models.User).filter_by(id=user_id).first()
+    if not user:
+        raise HTTPException(404, "User not found")
+    
+    user.role = new_role
+    db.commit()
+    logger.info(f"Admin {u.id} changed user {user_id} role to {new_role}")
+    return {"message": f"{user.name} is now {new_role}"}
 
 # ── PROJECTS ──────────────────────────────────────
 @app.get("/api/projects")
@@ -139,7 +163,6 @@ def update_task(tid: int, data: schemas.TaskUpdate, db: Session = Depends(get_db
         if t.assigned_to != u.id:
             logger.warning(f"User {u.id} tried to edit unassigned task {tid}")
             raise HTTPException(403, "You can only update tasks assigned to you")
-        # Only allow status updates for non-admins
         if data.status:
             t.status = data.status
             logger.info(f"User {u.id} updated status of task {tid} to {data.status}")
@@ -163,14 +186,10 @@ def dashboard(db: Session = Depends(get_db), u=Depends(auth.get_current_user)):
     if u.role == "admin":
         tasks = db.query(models.Task).all()
     else:
-        # Get all project IDs this member belongs to
         proj_ids = [m.project_id for m in db.query(models.ProjectMember).filter_by(user_id=u.id)]
-        # Grab all tasks from those projects, regardless of who they are assigned to
         tasks = db.query(models.Task).filter(models.Task.project_id.in_(proj_ids)).all()
         
     now = datetime.utcnow()
-    
-    # Grab the 5 most recently created tasks
     recent_tasks = sorted(tasks, key=lambda x: x.id, reverse=True)[:5]
     
     return {
@@ -181,6 +200,7 @@ def dashboard(db: Session = Depends(get_db), u=Depends(auth.get_current_user)):
         "overdue":     [_task(t, db) for t in tasks if t.due_date and t.due_date < now and t.status != "done"],
         "recent":      [_task(t, db) for t in recent_tasks]
     }
+
 # ── HELPERS ───────────────────────────────────────
 def _proj(p, db):
     members = db.query(models.User).join(models.ProjectMember, models.User.id == models.ProjectMember.user_id)\
